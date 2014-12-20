@@ -14,13 +14,70 @@ $( document ).on('cycle-bootstrap', function( e, opts, API ) {
 
     // override default 'next' function
     API.next = function() {
+        if ( opts.busy && ! opts.manualTrump )
+            return;
         var count = opts.reverse ? -1 : 1;
         if ( opts.allowWrap === false && ( opts.currSlide + count ) > opts.slideCount - opts.carouselVisible )
             return;
-        opts.API.advanceSlide( count );
+
+        opts.API.advanceSlide( count * opts.carouselHops );
         opts.API.trigger('cycle-next', [ opts ]).log('cycle-next');
     };
 
+    API.prev = function() {
+        if ( opts.busy && ! opts.manualTrump )
+            return;
+        var count = opts.reverse ? 1 : -1;
+        if ( opts.allowWrap === false && ( opts.currSlide + count ) < 0 )
+            return;
+
+        opts.API.advanceSlide( count * opts.carouselHops );
+        opts.API.trigger('cycle-prev', [ opts ]).log('cycle-prev');
+    };
+
+    API.calcFirstSlide = function() {
+        var opts = this.opts();
+        var firstSlideIndex;
+        firstSlideIndex = parseInt( opts.startingSlide || 0, 10 );
+        if (firstSlideIndex >= opts.slides.length || firstSlideIndex < 0)
+            firstSlideIndex = 0;
+
+        opts.currSlide = firstSlideIndex;
+        var count = opts.carouselHops * (opts.reverse ? -1 : 1);
+        opts.nextSlide = _calcNextSlide( firstSlideIndex, count );
+    };
+    
+    API.calcNextSlide = function(){
+        opts.currSlide = opts.nextSlide;
+        var count = opts.carouselHops * (opts.reverse ? -1 : 1);
+        opts.nextSlide = _calcNextSlide( opts.currSlide, count );
+    }
+
+    API.advanceSlide = function( val ) {
+        var opts = this.opts();
+        clearTimeout(opts.timeoutId);
+        opts.timeoutId = 0;
+        opts.nextSlide = _calcNextSlide( opts.currSlide, val );
+
+        opts.API.prepareTx( true,  val >= 0 );
+        return false;
+    };
+    
+    // Helper for the previous 3 methods
+    function _calcNextSlide(start, count){
+        if(opts.allowWrap)
+            return _modulo( start + count, opts.slideCount );
+        else
+            return _between( start + count, 0, opts.slideCount - opts.carouselVisible );
+    }
+
+    function _modulo(m,n) {
+        return ((m%n)+n)%n;
+    }
+
+    function _between(value, min, max){
+        return Math.max(Math.min(value, max), min);
+    }
 });
 
 
@@ -90,6 +147,11 @@ $.fn.cycle.transitions.carousel = {
             pagerCutoffIndex = opts.slideCount - visCount;
             $( opts.pager ).children().filter( ':gt('+pagerCutoffIndex+')' ).hide();
         }
+
+        if( opts.carouselVisible )
+            opts.carouselHops = Math.min(opts.carouselHops || 1, opts.slideCount - opts.carouselVisible + 1);
+        else
+            opts.carouselHops = Math.min(opts.carouselHops || 1, opts.slideCount - 1);
 
         opts._nextBoundry = opts.slideCount - opts.carouselVisible;
 
@@ -195,14 +257,16 @@ $.fn.cycle.transitions.carousel = {
             opts.API.opts()._currSlide = opts.nextSlide > maxCurr ? maxCurr : opts.nextSlide;
         }
         else {
-            if ( fwd && opts.nextSlide === 0 ) {
-                // moving from last slide to first
-                moveBy = this.getDim( opts, opts.currSlide, vert );
+            if ( fwd && opts.nextSlide < opts.currSlide ) {
+                // wrap around on the right
+                moveBy = this.getScroll( opts, vert, opts.currSlide, opts.slideCount-opts.currSlide );
+                moveBy += this.getScroll( opts, vert, 0, opts.nextSlide );
                 callback = this.genCallback( opts, fwd, vert, callback );
             }
-            else if ( !fwd && opts.nextSlide == opts.slideCount - 1 ) {
-                // moving from first slide to last
-                moveBy = this.getDim( opts, opts.currSlide, vert );
+            else if ( !fwd && opts.nextSlide > opts.currSlide ) {
+                // wrap around on the left
+                moveBy = this.getScroll( opts, vert, opts.nextSlide, opts.slideCount-opts.nextSlide );
+                moveBy += this.getScroll( opts, vert, 0, opts.currSlide );
                 callback = this.genCallback( opts, fwd, vert, callback );
             }
             else {
