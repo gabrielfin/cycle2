@@ -24,7 +24,8 @@ $(document).on( 'cycle-initialized', function(e, opts) {
 
         var data = e.originalEvent.touches ? e.originalEvent.touches[ 0 ] : e;
         var startCoords = vert ? data.pageY : data.pageX;
-        
+        var coords;
+
         var left = opts._carouselWrap.position()[vert ? 'top' : 'left'];
 
         var containerW = opts.container[vert ? 'height' : 'width']();
@@ -35,7 +36,7 @@ $(document).on( 'cycle-initialized', function(e, opts) {
         function _moveHandler(e){
 
             var data = e.originalEvent.touches ? e.originalEvent.touches[ 0 ] : e;
-            var coords = vert ? data.pageY : data.pageX;
+            coords = vert ? data.pageY : data.pageX;
 
             var delta = coords - startCoords;
 
@@ -46,7 +47,7 @@ $(document).on( 'cycle-initialized', function(e, opts) {
             }
 
             var newPos = left + delta;
-            
+
             opts._carouselWrap.css(vert ? 'top' : 'left', newPos);
 
         }
@@ -58,6 +59,10 @@ $(document).on( 'cycle-initialized', function(e, opts) {
 
         opts.container.one( 'touchend', function(e) {
             opts.container.unbind( 'touchmove', _moveHandler );
+
+            if ( Math.abs( startCoords - coords ) <= 10 ) {
+              return $( e.target ).trigger( 'click' );
+            }
 
             var scroll = opts._carouselWrap.position()[vert ? 'top' : 'left'] * -1;
             var bestChild;
@@ -106,8 +111,8 @@ $(document).on( 'cycle-initialized', function(e, opts) {
                 );
             } else {
                 opts._carouselWrap.animate(props, speed, after());
-            } 
-           
+            }
+
 
         });
 
