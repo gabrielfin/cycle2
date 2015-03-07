@@ -75,21 +75,25 @@ $(document).on( 'cycle-initialized', function(e, opts) {
                 opts.currSlide = nextSlide;
                 opts.nextSlide = nextSlide + 1;
                 $reset.add($prev, $curr);
+
+                if (opts.nextSlide >= opts.slides.length)
+                    opts.nextSlide = 0;
+
+                opts.API.trigger('cycle-next', [ opts ]).log('cycle-next');
             } else if(prevSlide !== null && posCurr > $curr[vert ? 'height' : 'width']()/2){ /* move backwards */
                 posCurr = w;
                 posPrev = 0;
                 opts.currSlide = prevSlide;
                 opts.nextSlide = currSlide;
                 $reset.add($curr, $next);
+
+                opts.API.trigger('cycle-prev', [ opts ]).log('cycle-prev');
             } else { /* stay put */
                 posPrev = -w;
                 posCurr = 0;
                 posNext = w;
                 $reset.add($prev, $next);
             }
-
-            if (opts.nextSlide >= opts.slides.length)
-                opts.nextSlide = 0;
 
             var slideOpts = opts.API.getSlideOpts( opts.currSlide );
             var speed = slideOpts.manualSpeed || slideOpts.speed;
