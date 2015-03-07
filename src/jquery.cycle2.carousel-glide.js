@@ -12,7 +12,6 @@ $(document).on( 'cycle-initialized', function(e, opts) {
     var vert = opts.carouselVertical;
 
     opts.container.on( 'touchstart', function(e) {
-        e.preventDefault();
 
         if ( opts.busy )
             return;
@@ -24,7 +23,7 @@ $(document).on( 'cycle-initialized', function(e, opts) {
 
         var data = e.originalEvent.touches ? e.originalEvent.touches[ 0 ] : e;
         var startCoords = vert ? data.pageY : data.pageX;
-        
+
         var left = opts._carouselWrap.position()[vert ? 'top' : 'left'];
 
         var containerW = opts.container[vert ? 'height' : 'width']();
@@ -46,7 +45,7 @@ $(document).on( 'cycle-initialized', function(e, opts) {
             }
 
             var newPos = left + delta;
-            
+
             opts._carouselWrap.css(vert ? 'top' : 'left', newPos);
 
         }
@@ -106,8 +105,8 @@ $(document).on( 'cycle-initialized', function(e, opts) {
                 );
             } else {
                 opts._carouselWrap.animate(props, speed, after());
-            } 
-           
+            }
+
 
         });
 

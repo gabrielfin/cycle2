@@ -12,7 +12,6 @@ $(document).on( 'cycle-initialized', function(e, opts) {
     var vert = opts.glide == 'vertical';
 
     opts.container.on( 'touchstart', function(e) {
-        e.preventDefault();
 
         if ( opts.busy )
             return;
