@@ -53,7 +53,8 @@ $(document).on( 'cycle-initialized', function(e, opts) {
 
         opts.container.on( 'touchmove', _moveHandler);
 
-        var maxSlide = opts.slideCount - opts.carouselVisible;
+        var maxSlide = opts.carouselVisible ? opts.slideCount - opts.carouselVisible : opts.slideCount;
+
 
         opts.container.one( 'touchend', function(e) {
             opts.container.unbind( 'touchmove', _moveHandler );
