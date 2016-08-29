@@ -2,6 +2,10 @@
 (function($) {
 "use strict";
 
+$.extend($.fn.cycle.defaults, {
+    carouselHops: 1
+});
+
 $( document ).on('cycle-bootstrap', function( e, opts, API ) {
     if ( opts.fx !== 'carousel' )
         return;
