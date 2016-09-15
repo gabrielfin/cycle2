@@ -2,7 +2,8 @@
 "use strict";
 
 $.extend($.fn.cycle.defaults, {
-    carouselGlide: false
+    carouselGlide: false,
+    carouselGlideThreshold: 2
 });
 
 $(document).on( 'cycle-initialized', function(e, opts) {
@@ -73,6 +74,8 @@ $(document).on( 'cycle-initialized', function(e, opts) {
                 var left = $(this).position()[vert ? 'top' : 'left'];
 
                 var dist = Math.abs(scroll - left);
+                if(opts.currSlide == slideNum)
+                    dist *= opts.carouselGlideThreshold;
                 if( dist < bestDist){
                     bestChild = slideIndex;
                     bestSlide = slideNum;
